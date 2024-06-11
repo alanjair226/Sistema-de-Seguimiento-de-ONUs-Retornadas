@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de ONUs</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 400px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        .form-group input, .form-group select {
+            width: calc(100% - 12px);
+            padding: 6px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        .alert {
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 4px;
+            display: none;
+        }
+        .alert.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .alert.danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .alert.info {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+        .alert.warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Gestión de ONUs</h1>
+        <div class="form-group">
+            <label for="sn">Número de Serie (SN)</label>
+            <input type="text" id="sn" placeholder="Introduce el SN">
+        </div>
+        <div class="form-group">
+            <label for="motivosSelect">Motivo</label>
+            <select id="motivosSelect">
+                <!-- Opciones cargadas dinámicamente desde JavaScript -->
+            </select>
+        </div>
+        <button id="verifyButton" class="btn-primary">Verificar/Registrar ONU</button>
+        <button id="disposeButton" class="btn-danger">Desechar ONU</button>
+        <div id="resultMessage" class="alert"></div>
+        <div id="historyMessage" class="alert"></div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
