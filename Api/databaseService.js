@@ -35,7 +35,7 @@ const registerONU = async (SN, motivoId, usuario) => {
                 if (existingONUs[0].veces_instalada >= 2) {
                     return 'Esta ONU DEBE DESECHARSE';
                 }
-                await connection.execute('UPDATE `ONU` SET `estado` = ?, `veces_instalada` = ? WHERE `SN` = ?', ['desechado', 2, SN]);
+                await connection.execute('UPDATE `ONU` SET `estado` = ?, `veces_instalada` = ? WHERE `SN` = ?', ['desechado', 'veces_instalada' + 1, SN]);
                 await connection.execute('INSERT INTO `ONU_Motivo` (`onu_sn`, `motivo_id`, `usuario`) VALUES (?, ?, ?)', [SN, motivoId, usuario]);
                 return 'La ONU se registra y se desecha';
             } else {
@@ -58,12 +58,33 @@ const desecharONU = async (SN, motivoId, usuario) => {
         try {
             const [existingONUs] = await connection.execute('SELECT * FROM `ONU` WHERE `SN` = ?', [SN]);
             if (existingONUs.length > 0) {
-                await connection.execute('UPDATE `ONU` SET `estado` = ?, `veces_instalada` = ? WHERE `SN` = ?', ['desechado', 2, SN]);
+                await connection.execute('UPDATE `ONU` SET `estado` = ?, `veces_instalada` = ? WHERE `SN` = ?', ['desechado', 'veces_instalada', SN]);
             } else {
                 await connection.execute('INSERT INTO `ONU` (`SN`, `estado`, `veces_instalada`) VALUES (?, ?, ?)', [SN, 'desechado', 1]);
             }
             await connection.execute('INSERT INTO `ONU_Motivo` (`onu_sn`, `motivo_id`, `usuario`) VALUES (?, ?, ?)', [SN, motivoId, usuario]);
             return 'La ONU se ha desechado';
+        } finally {
+            connection.release();
+        }
+    } catch (err) {
+        console.error('Error conectando a la base de datos:', err.stack);
+        throw err;
+    }
+};
+
+const almacenarONU = async (SN, motivoId, usuario) => {
+    try {
+        const connection = await pool.getConnection();
+        try {
+            const [existingONUs] = await connection.execute('SELECT * FROM `ONU` WHERE `SN` = ?', [SN]);
+            if (existingONUs.length > 0) {
+                await connection.execute('UPDATE `ONU` SET `estado` = ?, `veces_instalada` = ? WHERE `SN` = ?', ['almacen', 'veces_instalada' + 1, SN]);
+            } else {
+                await connection.execute('INSERT INTO `ONU` (`SN`, `estado`, `veces_instalada`) VALUES (?, ?, ?)', [SN, 'almacen', 1]);
+            }
+            await connection.execute('INSERT INTO `ONU_Motivo` (`onu_sn`, `motivo_id`, `usuario`) VALUES (?, ?, ?)', [SN, motivoId, usuario]);
+            return 'La ONU se ha almacenado';
         } finally {
             connection.release();
         }
@@ -125,5 +146,6 @@ module.exports = {
     desecharONU,
     getMotivosBySN,
     closePool,
-    getMotivos
+    getMotivos,
+    almacenarONU
 };

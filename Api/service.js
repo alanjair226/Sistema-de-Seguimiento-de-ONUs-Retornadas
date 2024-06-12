@@ -53,6 +53,19 @@ app.post('/onus/desechar', async (req, res) => {
     }
 });
 
+app.post('/onus/almacenar', async (req, res) => {
+    const { SN, motivoId } = req.body;
+    if (!SN || !motivoId) {
+        return res.status(400).json({ message: 'SN y motivoId son requeridos' });
+    }
+    try {
+        const response = await databaseService.desecharONU(SN, motivoId, 'usuario general');
+        res.json({ message: response });
+    } catch (error) {
+        res.status(500).json({ message: 'Error al almacenar la ONU', error: error.message });
+    }
+});
+
 app.get('/onus/:sn/motivos', async (req, res) => {
     const { sn } = req.params;
     try {
@@ -79,7 +92,7 @@ app.get('/motivos', async (req, res) => {
 
 
 app.listen(port, '0.0.0.0', () => {
-    console.log(`Server is running on http://http://10.131.91.205/:${port}`);
+    console.log(`Server is running on http://http://0.0.0.0/:${port}`);
 });
 
 process.on('SIGINT', async () => {

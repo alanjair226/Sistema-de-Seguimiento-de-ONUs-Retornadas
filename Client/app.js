@@ -2,10 +2,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     const snInput = document.getElementById('sn');
     const verifyButton = document.getElementById('verifyButton');
     const disposeButton = document.getElementById('disposeButton');
+    const storeButton = document.getElementById('storeButton');
     const resultMessage = document.getElementById('resultMessage');
     const historyMessage = document.getElementById('historyMessage');
     const motivosSelect = document.getElementById('motivosSelect');
-    const url = 'http://192.168.0.1:3000';
+    const url = 'http://10.131.97.59:3000';
 
     const showMessage = (element, message, type) => {
         element.className = `alert ${type}`;
@@ -105,6 +106,34 @@ document.addEventListener('DOMContentLoaded', async () => {
             await fetchHistory(sn);
         } catch (error) {
             showMessage(resultMessage, 'Error al desechar la ONU', 'danger');
+        }
+    });
+    storeButton.addEventListener('click', async () => {
+        const sn = snInput.value.trim();
+        const motivoId = motivosSelect.value;
+        if (!sn) {
+            showMessage(resultMessage, 'Por favor, introduce un SN válido.', 'warning');
+            return;
+        }
+        hideMessage(resultMessage);
+
+        try {
+            const response = await fetch(`${url}/onus/almacenar`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ SN: sn, motivoId: motivoId })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                showMessage(resultMessage, data.message, 'success');
+            } else {
+                showMessage(resultMessage, data.message, 'danger');
+            }
+            await fetchHistory(sn);
+        } catch (error) {
+            showMessage(resultMessage, 'Error al almacenar la ONU', 'danger');
         }
     });
 });
