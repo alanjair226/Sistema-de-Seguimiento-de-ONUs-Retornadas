@@ -26,20 +26,28 @@ const getONUBySN = async (SN) => {
     }
 };
 
-const registerONU = async (SN, motivoId, usuario) => {
+const registerONU = async (SN, motivoId, usuario, modeloId) => {
     try {
         const connection = await pool.getConnection();
+        
         try {
+            const [ordenactiva] = await connection.execute(`SELECT * FROM orden WHERE estado = 'Activa'`);
+            if (ordenactiva.length === 0) {
+                return 'No hay una orden activa';
+            }
+            const orden = ordenactiva[0].id;
+
             const [existingONUs] = await connection.execute('SELECT * FROM `ONU` WHERE `SN` = ?', [SN]);
+            
             if (existingONUs.length > 0) {
                 if (existingONUs[0].veces_instalada >= 2) {
                     return 'Esta ONU DEBE DESECHARSE';
                 }
-                await connection.execute('UPDATE `ONU` SET `estado` = ?, `veces_instalada` = `veces_instalada` + 1 WHERE `SN` = ?', ['desechado', SN]);
-                await connection.execute('INSERT INTO `ONU_Motivo` (`onu_sn`, `motivo_id`, `usuario`) VALUES (?, ?, ?)', [SN, motivoId, usuario]);
+                await connection.execute('UPDATE `ONU` SET `estado` = ?, `veces_instalada` = `veces_instalada` + 1, `orden_id` = ? WHERE `SN` = ?', ['desechado', orden, SN]);
+                await connection.execute('INSERT INTO `ONU_Motivo` (`onu_sn`, `motivo_id`, `usuario`, `modelo_id`) VALUES (?, ?, ?, ?)', [SN, motivoId, usuario, modeloId]);
                 return 'La ONU se registra y se desecha';
             } else {
-                await connection.execute('INSERT INTO `ONU` (`SN`, `estado`, `veces_instalada`) VALUES (?, ?, ?)', [SN, 'almacen', 1]);
+                await connection.execute('INSERT INTO `ONU` (`SN`, `estado`, `veces_instalada`, `modelo_id`, `orden_id`) VALUES (?, ?, ?, ?, ?)', [SN, 'almacen', 1, modeloId, orden]);
                 await connection.execute('INSERT INTO `ONU_Motivo` (`onu_sn`, `motivo_id`, `usuario`) VALUES (?, ?, ?)', [SN, motivoId, usuario]);
                 return 'La ONU se registra y se reutiliza';
             }
@@ -160,6 +168,21 @@ const getMotivos = async () => {
     }
 };
 
+const getModelos = async () => {
+    try {
+        const connection = await pool.getConnection();
+        try {
+            const [results] = await connection.execute('SELECT * FROM `modelo_modem`');
+            return results;
+        } finally {
+            connection.release();
+        }
+    } catch (error) {
+        console.error('Error al obtener los motivos:', error);
+        throw error;
+    }
+};
+
 const getUltimasONUs = async () => {
     try {
         const connection = await pool.getConnection();
@@ -250,5 +273,6 @@ module.exports = {
     postMotivoEstado,
     getUltimasONUs,
     postOrden,
-    getOrden
+    getOrden,
+    getModelos
 }

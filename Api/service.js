@@ -35,12 +35,12 @@ app.get('/onus/:sn', async (req, res) => {
 });
 
 app.post('/onus', async (req, res) => {
-    const { SN, motivoId } = req.body;
+    const { SN, motivoId, modeloId } = req.body;
     if (!SN || !motivoId) {
         return res.status(400).json({ message: 'SN y motivoId son requeridos' });
     }
     try {
-        const response = await databaseService.registerONU(SN, motivoId, 'usuario general');
+        const response = await databaseService.registerONU(SN, motivoId, 'usuario general', modeloId );
         res.json({ message: response });
     } catch (error) {
         res.status(500).json({ message: 'Error al registrar la ONU', error: error.message });
@@ -93,6 +93,14 @@ app.get('/motivos', async (req, res) => {
         res.json(motivos);
     } catch (error) {
         res.status(500).json({ message: 'Error al obtener los motivos', error: error.message });
+    }
+});
+app.get('/modelos', async (req, res) => {
+    try {
+        const motivos = await databaseService.getModelos();
+        res.json(motivos);
+    } catch (error) {
+        res.status(500).json({ message: 'Error al obtener los modelos', error: error.message });
     }
 });
 
