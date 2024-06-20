@@ -4,86 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de ONUs</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        .container {
-            background-color: white;
-            padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            width: 500px;
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            color: #333;
-        }
-        .form-group input, .form-group select {
-            width: calc(100% - 12px);
-            padding: 6px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        button {
-            width: 100%;
-            padding: 10px;
-            border: none;
-            margin: auto;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-bottom: 20px;
-        }
-        .btn-primary {
-            background-color: #007bff;
-            color: white;
-        }
-        .btn-sec {
-            background-color: #00ae17;
-            color: white;
-        }
-        .btn-danger {
-            background-color: #dc3545;
-            color: white;
-        }
-        .alert {
-            padding: 10px;
-            margin-top: 20px;
-            border-radius: 4px;
-            display: none;
-        }
-        .alert.success {
-            background-color: #d4edda;
-            color: #155724;
-        }
-        .alert.danger {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-        .alert.info {
-            background-color: #cce5ff;
-            color: #004085;
-        }
-        .alert.warning {
-            background-color: #fff3cd;
-            color: #856404;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
@@ -98,13 +19,47 @@
                 <!-- Opciones cargadas dinámicamente desde JavaScript -->
             </select>
         </div>
-        <button id="verifyButton" class="btn-primary">Verificar/Registrar ONU</button>
-        <button id="disposeButton" class="btn-danger">Desechar ONU</button>
-        <button id="storeButton" class="btn-sec">Almacenar ONU</button>
+        <button id="verifyButton" class="btn btn-primary">Verificar/Registrar ONU</button>
+        <button id="disposeButton" class="btn btn-danger">Desechar ONU</button>
+        <button id="storeButton" class="btn btn-sec">Almacenar ONU</button>
         <div id="resultMessage" class="alert"></div>
         <div id="historyMessage" class="alert"></div>
+
+        <!-- Botón para redirigir a la página de últimas ONUs -->
+        <a href="ultimas_ONUs.html" class="btn btn-primary">Ver Últimas ONUs</a>
+    </div>
+
+    <div class="table-container">
+        <h1>Lista de ONUs sin Motivo Desechado</h1>
+        <table id="desechadoTable">
+            <thead>
+                <tr>
+                    <th>SN</th>
+                    <th>Motivo por el que se desecha</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Aquí se insertarán las filas dinámicamente -->
+            </tbody>
+        </table>
+
+        <h1>Lista de ONUs sin Motivo Almacen</h1>
+        <table id="almacenTable">
+            <thead>
+                <tr>
+                    <th>SN</th>
+                    <th>Motivo por el que se almacena</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Aquí se insertarán las filas dinámicamente -->
+            </tbody>
+        </table>
     </div>
 
     <script src="app.js"></script>
+    <script src="withoutReasons.js"></script>
 </body>
 </html>

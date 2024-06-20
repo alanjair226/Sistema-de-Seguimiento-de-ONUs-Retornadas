@@ -35,7 +35,7 @@ const registerONU = async (SN, motivoId, usuario) => {
                 if (existingONUs[0].veces_instalada >= 2) {
                     return 'Esta ONU DEBE DESECHARSE';
                 }
-                await connection.execute('UPDATE `ONU` SET `estado` = ?, `veces_instalada` = ? WHERE `SN` = ?', ['desechado', 'veces_instalada' + 1, SN]);
+                await connection.execute('UPDATE `ONU` SET `estado` = ?, `veces_instalada` = `veces_instalada` + 1 WHERE `SN` = ?', ['desechado', SN]);
                 await connection.execute('INSERT INTO `ONU_Motivo` (`onu_sn`, `motivo_id`, `usuario`) VALUES (?, ?, ?)', [SN, motivoId, usuario]);
                 return 'La ONU se registra y se desecha';
             } else {
@@ -58,11 +58,10 @@ const desecharONU = async (SN, motivoId, usuario) => {
         try {
             const [existingONUs] = await connection.execute('SELECT * FROM `ONU` WHERE `SN` = ?', [SN]);
             if (existingONUs.length > 0) {
-                await connection.execute('UPDATE `ONU` SET `estado` = ?, `veces_instalada` = ? WHERE `SN` = ?', ['desechado', 'veces_instalada', SN]);
+                await connection.execute('UPDATE `ONU` SET `estado` = ?, `veces_instalada` = `veces_instalada` WHERE `SN` = ?', ['desechado', SN]);
             } else {
                 await connection.execute('INSERT INTO `ONU` (`SN`, `estado`, `veces_instalada`) VALUES (?, ?, ?)', [SN, 'desechado', 1]);
             }
-            await connection.execute('INSERT INTO `ONU_Motivo` (`onu_sn`, `motivo_id`, `usuario`) VALUES (?, ?, ?)', [SN, motivoId, usuario]);
             return 'La ONU se ha desechado';
         } finally {
             connection.release();
@@ -79,11 +78,10 @@ const almacenarONU = async (SN, motivoId, usuario) => {
         try {
             const [existingONUs] = await connection.execute('SELECT * FROM `ONU` WHERE `SN` = ?', [SN]);
             if (existingONUs.length > 0) {
-                await connection.execute('UPDATE `ONU` SET `estado` = ?, `veces_instalada` = ? WHERE `SN` = ?', ['almacen', 'veces_instalada' + 1, SN]);
+                await connection.execute('UPDATE `ONU` SET `estado` = ?, `veces_instalada` = `veces_instalada` WHERE `SN` = ?', ['almacen', SN]);
             } else {
                 await connection.execute('INSERT INTO `ONU` (`SN`, `estado`, `veces_instalada`) VALUES (?, ?, ?)', [SN, 'almacen', 1]);
             }
-            await connection.execute('INSERT INTO `ONU_Motivo` (`onu_sn`, `motivo_id`, `usuario`) VALUES (?, ?, ?)', [SN, motivoId, usuario]);
             return 'La ONU se ha almacenado';
         } finally {
             connection.release();
@@ -116,6 +114,37 @@ const getMotivosBySN = async (SN) => {
     }
 };
 
+const getSinMotivoEstatus = async () => {
+    try {
+        const connection = await pool.getConnection();
+        try {
+            const [results] = await connection.execute(`SELECT ONU.SN, ONU.estado, ONU.Motivo_estado FROM ONU WHERE ONU.Motivo_estado = ''`);
+            return results;
+        } finally {
+            connection.release();
+        }
+    } catch (err) {
+        console.error('Error conectando a la base de datos:', err.stack);
+        throw err;
+    }
+};
+
+const postMotivoEstado = async (SN, motivo) => {
+    try {
+        const connection = await pool.getConnection();
+        try {
+            await connection.execute('UPDATE `ONU` SET Motivo_estado=? WHERE ONU.SN = ?', [motivo, SN]);
+
+            return `Se registro el motivo: ${motivo} en ${SN}`;
+        } finally {
+            connection.release();
+        }
+    } catch (err) {
+        console.error('Error conectando a la base de datos:', err.stack);
+        throw err;
+    }
+};
+
 const getMotivos = async () => {
     try {
         const connection = await pool.getConnection();
@@ -128,6 +157,28 @@ const getMotivos = async () => {
     } catch (error) {
         console.error('Error al obtener los motivos:', error);
         throw error;
+    }
+};
+
+const getUltimasONUs = async () => {
+    try {
+        const connection = await pool.getConnection();
+        try {
+            const [results] = await connection.execute(`
+                SELECT ONU.SN, ONU.estado, ONU.Motivo_estado, ONU_Motivo.fecha
+                FROM ONU 
+                INNER JOIN ONU_Motivo ON ONU.SN = ONU_Motivo.onu_sn
+                WHERE DATE(ONU_Motivo.fecha) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+                AND DATE(ONU_Motivo.fecha) <= CURDATE();
+
+            `);
+            return results;
+        } finally {
+            connection.release();
+        }
+    } catch (err) {
+        console.error('Error conectando a la base de datos:', err.stack);
+        throw err;
     }
 };
 
@@ -147,5 +198,8 @@ module.exports = {
     getMotivosBySN,
     closePool,
     getMotivos,
-    almacenarONU
+    almacenarONU,
+    getSinMotivoEstatus,
+    postMotivoEstado,
+    getUltimasONUs
 };

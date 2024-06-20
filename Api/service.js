@@ -12,7 +12,14 @@ app.get('/', (req, res) => {
     res.send('Sistema de Seguimiento de ONUs Retornadas')
     console.log('heloo')
   })
-
+  app.get('/onus/ultimasONUS', async (req, res) => {
+    try {
+        const ONUs = await databaseService.getUltimasONUs();
+        res.json(ONUs);
+    } catch (error) {
+        res.status(500).json({ message: 'Error al obtener las ONUs', error: error.message });
+    }
+});
 app.get('/onus/:sn', async (req, res) => {
     const { sn } = req.params;
     try {
@@ -59,7 +66,7 @@ app.post('/onus/almacenar', async (req, res) => {
         return res.status(400).json({ message: 'SN y motivoId son requeridos' });
     }
     try {
-        const response = await databaseService.desecharONU(SN, motivoId, 'usuario general');
+        const response = await databaseService.almacenarONU(SN, motivoId, 'usuario general');
         res.json({ message: response });
     } catch (error) {
         res.status(500).json({ message: 'Error al almacenar la ONU', error: error.message });
@@ -86,6 +93,28 @@ app.get('/motivos', async (req, res) => {
         res.json(motivos);
     } catch (error) {
         res.status(500).json({ message: 'Error al obtener los motivos', error: error.message });
+    }
+});
+
+app.get('/onus/sinmotivo/estado', async (req, res) => {
+    try {
+        const ONUs = await databaseService.getSinMotivoEstatus();
+        res.json(ONUs);
+    } catch (error) {
+        res.status(500).json({ message: 'Error al obtener las ONUs', error: error.message });
+    }
+});
+
+app.post('/motivoestado', async (req, res) => {
+    const { SN, motivo } = req.body;
+    if (!SN || !motivo) {
+        return res.status(400).json({ message: 'SN y motivo son requeridos' });
+    }
+    try {
+        const response = await databaseService.postMotivoEstado(SN, motivo);
+        res.json({ message: response });
+    } catch (error) {
+        res.status(500).json({ message: 'Error al actualizar motivo', error: error.message });
     }
 });
 

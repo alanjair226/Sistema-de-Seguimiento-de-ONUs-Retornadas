@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const resultMessage = document.getElementById('resultMessage');
     const historyMessage = document.getElementById('historyMessage');
     const motivosSelect = document.getElementById('motivosSelect');
-    const url = 'http://10.131.97.59:3000';
+    const url = 'http://192.168.5.49:3000';
 
     const showMessage = (element, message, type) => {
         element.className = `alert ${type}`;
