@@ -118,7 +118,30 @@ app.post('/motivoestado', async (req, res) => {
     }
 });
 
+app.post('/orden', async (req, res) => {
+    const { Huawei_V5 = 0, Huawei_A5_H5 = 0, TpLink_G3V_Negro = 0, TpLink_XC220 = 0, Nokia = 0, Otros = 0 } = req.body;
 
+    // Verificar que al menos una ONU tenga un valor distinto de 0
+    if (Huawei_V5 === 0 && Huawei_A5_H5 === 0 && TpLink_G3V_Negro === 0 && TpLink_XC220 === 0 && Nokia === 0 && Otros === 0) {
+        return res.status(400).json({ message: 'Debe haber al menos una ONU en la orden' });
+    }
+
+    try {
+        const response = await databaseService.postOrden(Huawei_V5, Huawei_A5_H5, TpLink_G3V_Negro, TpLink_XC220, Nokia, Otros);
+        res.json({ response });
+    } catch (error) {
+        res.status(500).json({ message: 'Error al actualizar motivo', error: error.message });
+    }
+});
+
+app.get('/orden', async (req, res) => {
+    try {
+        const Orden = await databaseService.getOrden();
+        res.json(Orden);
+    } catch (error) {
+        res.status(500).json({ message: 'Error al obtener la orden', error: error.message });
+    }
+});
 
 app.listen(port, '0.0.0.0', () => {
     console.log(`Server is running on http://http://0.0.0.0/:${port}`);

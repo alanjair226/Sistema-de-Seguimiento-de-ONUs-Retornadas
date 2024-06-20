@@ -182,6 +182,53 @@ const getUltimasONUs = async () => {
     }
 };
 
+const postOrden = async (Huawei_V5, Huawei_A5_H5, TpLink_G3V_Negro, TpLink_XC220, Nokia, Otros) => {
+    try {
+        const connection = await pool.getConnection();
+        try {
+            await connection.execute(`INSERT INTO orden (estado, recibido, Huawei_V5, Huawei_A5_H5, TpLink_G3V_Negro, TpLink_XC220, Nokia, Otros)
+                                        VALUES ('Por entregar', 'no', ?, ?, ?, ?, ?, ?)`, [Huawei_V5, Huawei_A5_H5, TpLink_G3V_Negro, TpLink_XC220, Nokia, Otros]);
+            const total = Huawei_V5+ Huawei_A5_H5+ TpLink_G3V_Negro+ TpLink_XC220+ Nokia+ Otros;
+            const respuestaJSON = {
+                mensaje: `Se registró la orden`,
+                detalles: {
+                    Huawei_V5,
+                    Huawei_A5_H5,
+                    TpLink_G3V_Negro,
+                    TpLink_XC220,
+                    Nokia,
+                    Otros,
+                    total
+                }
+            };
+            return respuestaJSON;
+        } finally {
+            connection.release();
+        }
+    } catch (err) {
+        console.error('Error conectando a la base de datos:', err.stack);
+        throw err;
+    }
+};
+
+const getOrden = async () => {
+    try {
+        const connection = await pool.getConnection();
+        try {
+            const [results] = await connection.execute(`SELECT * FROM orden WHERE estado = 'Por entregar' OR estado = 'Activa'`);
+            return results;
+        } finally {
+            connection.release();
+        }
+    } catch (error) {
+        console.error('Error al obtener la orden:', error);
+        throw error;
+    }
+};
+
+
+
+
 const closePool = async () => {
     try {
         await pool.end();
@@ -201,5 +248,7 @@ module.exports = {
     almacenarONU,
     getSinMotivoEstatus,
     postMotivoEstado,
-    getUltimasONUs
-};
+    getUltimasONUs,
+    postOrden,
+    getOrden
+}
