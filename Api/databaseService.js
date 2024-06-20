@@ -29,16 +29,26 @@ const getONUBySN = async (SN) => {
 const registerONU = async (SN, motivoId, usuario, modeloId) => {
     try {
         const connection = await pool.getConnection();
-        
+
         try {
+            const [modelo] = await connection.execute(`SELECT * FROM modelo_onu WHERE id = ?`, [modeloId]);
+            const modelo_nombre = modelo[0].nombre;
+
             const [ordenactiva] = await connection.execute(`SELECT * FROM orden WHERE estado = 'Activa'`);
             if (ordenactiva.length === 0) {
                 return 'No hay una orden activa';
             }
+
             const orden = ordenactiva[0].id;
 
+            // Verificar si la columna existe en ordenactiva[0]
+            if (ordenactiva[0][modelo_nombre] === 0) {
+                return 'en la orden no se encuentran ONUs disponibles de este modelo para revisar'
+            } else{
+                console.log('si hay modems')
+            }
             const [existingONUs] = await connection.execute('SELECT * FROM `ONU` WHERE `SN` = ?', [SN]);
-            
+
             if (existingONUs.length > 0) {
                 if (existingONUs[0].veces_instalada >= 2) {
                     return 'Esta ONU DEBE DESECHARSE';
@@ -172,7 +182,7 @@ const getModelos = async () => {
     try {
         const connection = await pool.getConnection();
         try {
-            const [results] = await connection.execute('SELECT * FROM `modelo_modem`');
+            const [results] = await connection.execute('SELECT * FROM `modelo_onu`');
             return results;
         } finally {
             connection.release();
@@ -211,7 +221,7 @@ const postOrden = async (Huawei_V5, Huawei_A5_H5, TpLink_G3V_Negro, TpLink_XC220
         try {
             await connection.execute(`INSERT INTO orden (estado, recibido, Huawei_V5, Huawei_A5_H5, TpLink_G3V_Negro, TpLink_XC220, Nokia, Otros)
                                         VALUES ('Por entregar', 'no', ?, ?, ?, ?, ?, ?)`, [Huawei_V5, Huawei_A5_H5, TpLink_G3V_Negro, TpLink_XC220, Nokia, Otros]);
-            const total = Huawei_V5+ Huawei_A5_H5+ TpLink_G3V_Negro+ TpLink_XC220+ Nokia+ Otros;
+            const total = Huawei_V5 + Huawei_A5_H5 + TpLink_G3V_Negro + TpLink_XC220 + Nokia + Otros;
             const respuestaJSON = {
                 mensaje: `Se registró la orden`,
                 detalles: {
@@ -249,6 +259,22 @@ const getOrden = async () => {
     }
 };
 
+const activarOrden = async () => {
+    try {
+        const connection = await pool.getConnection();
+        try {
+            const [results] = await connection.execute(`SELECT * FROM orden WHERE estado = 'Por entregar' OR estado = 'Activa'`);
+            await connection.execute(`UPDATE orden SET estado='Activa' WHERE id = ?`,[results[0].id]);
+            return 'Soporte y Almacen quedarón de acuerdo en que la cantidad de ONUs entregada coincide con la orden';
+        } finally {
+            connection.release();
+        }
+    } catch (error) {
+        console.error('Error al obtener la orden:', error);
+        throw error;
+    }
+};
+
 
 
 
@@ -274,5 +300,6 @@ module.exports = {
     getUltimasONUs,
     postOrden,
     getOrden,
-    getModelos
+    getModelos,
+    activarOrden
 }
