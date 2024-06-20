@@ -6,7 +6,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const resultMessage = document.getElementById('resultMessage');
     const historyMessage = document.getElementById('historyMessage');
     const motivosSelect = document.getElementById('motivosSelect');
-    const url = 'http://192.168.5.49:3000';
+    const modelosSelect = document.getElementById('modelosSelect');
+    const orderDetails = document.getElementById('orderDetails');
+    const url = 'http://localhost:3000';
 
     const showMessage = (element, message, type) => {
         element.className = `alert ${type}`;
@@ -32,7 +34,63 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    // Función para cargar los motivos desde el backend
+    const loadOrder = async () => {
+        try {
+            const response = await fetch(`${url}/orden`);
+            const [order] = await response.json(); // Asumimos que siempre recibimos un array con una sola orden
+            if (order) {
+                orderDetails.innerHTML = `
+                    <p><strong>ID:</strong> ${order.id}</p>
+                    <p><strong>Estado:</strong> ${order.estado}</p>
+                    <p><strong>Recibido:</strong> ${order.recibido}</p>
+                    <p><strong>Huawei V5:</strong> ${order.Huawei_V5}</p>
+                    <p><strong>Huawei A5 H5:</strong> ${order.Huawei_A5_H5}</p>
+                    <p><strong>TpLink G3V Negro:</strong> ${order.TpLink_G3V_Negro}</p>
+                    <p><strong>TpLink XC220:</strong> ${order.TpLink_XC220}</p>
+                    <p><strong>Nokia:</strong> ${order.Nokia}</p>
+                    <p><strong>Otros:</strong> ${order.Otros}</p>
+                    <p><strong>Total ONUs:</strong> ${order.Total_ONUs}</p>
+                `;
+                if (order.estado === 'Por entregar') {
+                    const notice = document.createElement('p');
+                    notice.textContent = 'REVISAR QUE LA CANTIDAD DE MODEMS QUE ENTREGA ALMACEN CORRESPONDAN A LAS QUE MUESTRA LA ORDEN Y DAR ANTES DE ACEPTAR LA ORDEN';
+                    orderDetails.appendChild(notice);
+
+                    const acceptButton = document.createElement('button');
+                    acceptButton.textContent = 'Aceptar';
+                    acceptButton.className = 'btn btn-primary';
+                    acceptButton.id = 'acceptOrderButton';
+                    orderDetails.appendChild(acceptButton);
+
+                    acceptButton.addEventListener('click', async () => {
+                        try {
+                            const response = await fetch(`${url}/orden/activar`, {
+                                method: 'PATCH',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+                            const data = await response.json();
+                            if (response.ok) {
+                                alert(data.message);
+                                await loadOrder();
+                            } else {
+                                alert('Error: ' + data.message);
+                            }
+                        } catch (error) {
+                            alert('Error al activar la orden');
+                        }
+                    });
+                }
+            } else {
+                orderDetails.innerHTML = '<p>Por el momento no hay ONUs que revisar.</p>';
+            }
+        } catch (error) {
+            orderDetails.innerHTML = '<p>Por el momento no hay ONUs que revisar.</p>';
+            console.error('Error al cargar la orden:', error);
+        }
+    };
+
     const loadMotivos = async () => {
         try {
             const response = await fetch(`${url}/motivos`);
@@ -48,12 +106,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    // Llama a la función para cargar los motivos al cargar el DOM
+    const loadModelos = async () => {
+        try {
+            const response = await fetch(`${url}/modelos`);
+            const modelos = await response.json();
+            modelos.forEach(modelo => {
+                const option = document.createElement('option');
+                option.value = modelo.id;
+                option.textContent = modelo.nombre;
+                modelosSelect.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error al cargar los modelos:', error);
+        }
+    };
+
     await loadMotivos();
+    await loadModelos();
+    await loadOrder();
 
     verifyButton.addEventListener('click', async () => {
         const sn = snInput.value.trim();
         const motivoId = motivosSelect.value;
+        const modeloId = modelosSelect.value;
         if (!sn) {
             showMessage(resultMessage, 'Por favor, introduce un SN válido.', 'warning');
             return;
@@ -66,7 +141,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ SN: sn, motivoId: motivoId })
+                body: JSON.stringify({ SN: sn, motivoId: motivoId, modeloId: modeloId })
             });
             const data = await response.json();
             if (response.ok) {
@@ -83,6 +158,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     disposeButton.addEventListener('click', async () => {
         const sn = snInput.value.trim();
         const motivoId = motivosSelect.value;
+        const modeloId = modelosSelect.value;
         if (!sn) {
             showMessage(resultMessage, 'Por favor, introduce un SN válido.', 'warning');
             return;
@@ -95,7 +171,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ SN: sn, motivoId: motivoId })
+                body: JSON.stringify({ SN: sn, motivoId: motivoId, modeloId: modeloId })
             });
             const data = await response.json();
             if (response.ok) {
@@ -108,9 +184,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             showMessage(resultMessage, 'Error al desechar la ONU', 'danger');
         }
     });
+
     storeButton.addEventListener('click', async () => {
         const sn = snInput.value.trim();
         const motivoId = motivosSelect.value;
+        const modeloId = modelosSelect.value;
         if (!sn) {
             showMessage(resultMessage, 'Por favor, introduce un SN válido.', 'warning');
             return;
@@ -123,7 +201,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ SN: sn, motivoId: motivoId })
+                body: JSON.stringify({ SN: sn, motivoId: motivoId, modeloId: modeloId })
             });
             const data = await response.json();
             if (response.ok) {

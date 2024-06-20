@@ -7,26 +7,38 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Gestión de ONUs</h1>
-        <div class="form-group">
-            <label for="sn">Número de Serie (SN)</label>
-            <input type="text" id="sn" placeholder="Introduce el SN">
+    <div class="main-container">
+        <div class="order-container">
+            <h1>Detalles de la Orden</h1>
+            <div id="orderDetails">
+                <!-- Detalles de la orden se cargarán dinámicamente -->
+            </div>
         </div>
-        <div class="form-group">
-            <label for="motivosSelect">Motivo</label>
-            <select id="motivosSelect">
-                <!-- Opciones cargadas dinámicamente desde JavaScript -->
-            </select>
+        <div class="form-container">
+            <h1>Gestión de ONUs</h1>
+            <div class="form-group">
+                <label for="sn">Número de Serie (SN)</label>
+                <input type="text" id="sn" placeholder="Introduce el SN">
+            </div>
+            <div class="form-group">
+                <label for="motivosSelect">Motivo</label>
+                <select id="motivosSelect">
+                    <!-- Opciones cargadas dinámicamente desde JavaScript -->
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="modelosSelect">Modelo</label>
+                <select id="modelosSelect">
+                    <!-- Opciones cargadas dinámicamente desde JavaScript -->
+                </select>
+            </div>
+            <button id="verifyButton" class="btn btn-primary">Verificar/Registrar ONU</button>
+            <button id="disposeButton" class="btn btn-danger">Desechar ONU</button>
+            <button id="storeButton" class="btn btn-sec">Almacenar ONU</button>
+            <div id="resultMessage" class="alert"></div>
+            <div id="historyMessage" class="alert"></div>
+            <a href="ultimas_ONUs.html" class="btn btn-primary">Ver Últimas ONUs</a>
         </div>
-        <button id="verifyButton" class="btn btn-primary">Verificar/Registrar ONU</button>
-        <button id="disposeButton" class="btn btn-danger">Desechar ONU</button>
-        <button id="storeButton" class="btn btn-sec">Almacenar ONU</button>
-        <div id="resultMessage" class="alert"></div>
-        <div id="historyMessage" class="alert"></div>
-
-        <!-- Botón para redirigir a la página de últimas ONUs -->
-        <a href="ultimas_ONUs.html" class="btn btn-primary">Ver Últimas ONUs</a>
     </div>
 
     <div class="table-container">

@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const tableBody = document.querySelector('#ultimasONUsTable tbody');
 
     // Realizar la solicitud GET utilizando fetch
-    fetch('http://192.168.5.49:3000/onus/ultimasONUS')
+    fetch('http://localhost:3000/onus/ultimasONUS')
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');

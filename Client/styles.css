@@ -9,15 +9,21 @@ body {
     min-height: 100vh;
 }
 
-.container {
+.main-container {
+    display: flex;
+    width: 90%;
+    max-width: 1200px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.order-container, .form-container {
     background-color: white;
     padding: 40px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    width: 90%;
-    max-width: 500px;
-    margin-top: 20px;
-    margin-bottom: 20px;
+    margin: 0 20px;
+    flex: 1;
 }
 
 h1 {

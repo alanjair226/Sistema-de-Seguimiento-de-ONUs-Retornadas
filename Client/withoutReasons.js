@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function() {
-    const apiUrl = 'http://192.168.5.49:3000/onus/sinmotivo/estado';
-    const insertUrl = 'http://192.168.5.49:3000/motivoestado';
+    const apiUrl = 'http://localhost:3000/onus/sinmotivo/estado';
+    const insertUrl = 'http://localhost:3000/motivoestado';
 
     // Función para cargar los datos y crear las tablas
     function loadTableData() {
