@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ORDENES DE REVISION DE ONUs</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .main-container {
+            display: flex;
+            width: 90%;
+            max-width: 1200px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .table-container {
+            width: 90%;
+            max-width: 1000px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+        td {
+            background-color: #f9f9f9;
+        }
+        td button {
+            padding: 5px 10px;
+            margin: 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #28a745;
+            color: white;
+        }
+        td button:hover {
+            background-color: #218838;
+        }
+        .new-order-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .new-order-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>ORDENES DE REVISION DE ONUs</h1>
+    <a href="new_order.html" class="new-order-button">Nueva Orden</a>
+    <div class="main-container">
+        <div class="table-container">
+            <table id="ordersTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Estado</th>
+                        <th>Total ONUs</th>
+                        <th>Fecha</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="ordersTableBody">
+                    <!-- Data will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const ordersTableBody = document.getElementById('ordersTableBody');
+
+            // Fetch orders list
+            const response = await fetch('http://localhost:3000/orden/list');
+            const orders = await response.json();
+
+            // Populate the table with orders
+            orders.forEach(order => {
+                const row = document.createElement('tr');
+
+                row.innerHTML = `
+                    <td>${order.id}</td>
+                    <td>${order.estado}</td>
+                    <td>${order.Total_ONUs}</td>
+                    <td>${new Date(order.Fecha).toLocaleString()}</td>
+                    <td><button onclick="viewOrder(${order.id})">Consultar</button></td>
+                `;
+
+                ordersTableBody.appendChild(row);
+            });
+        });
+
+        function viewOrder(orderId) {
+            window.location.href = `order.html?orderId=${orderId}`;
+        }
+    </script>
+</body>
+</html>
