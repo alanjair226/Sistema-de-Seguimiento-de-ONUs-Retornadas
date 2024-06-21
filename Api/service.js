@@ -160,6 +160,16 @@ app.patch('/orden/activar', async (req, res) => {
     }
 });
 
+app.patch('/orden/terminar', async (req, res) => {
+    try {
+        const Orden = await databaseService.terminarOrden();
+        res.json(Orden);
+    } catch (error) {
+        res.status(500).json({ message: 'Error al obtener la orden', error: error.message });
+    }
+});
+
+
 app.listen(port, '0.0.0.0', () => {
     console.log(`Server is running on http://http://0.0.0.0/:${port}`);
 });

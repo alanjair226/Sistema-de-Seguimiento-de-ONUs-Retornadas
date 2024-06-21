@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const response = await fetch(`${url}/orden`);
             const [order] = await response.json(); // Asumimos que siempre recibimos un array con una sola orden
+            console.log('Orden cargada:', order); // Log para depuración
             if (order) {
                 orderDetails.innerHTML = `
                     <p><strong>ID:</strong> ${order.id}</p>
@@ -51,6 +52,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <p><strong>Otros:</strong> ${order.Otros}</p>
                     <p><strong>Total ONUs:</strong> ${order.Total_ONUs}</p>
                 `;
+
                 if (order.estado === 'Por entregar') {
                     const notice = document.createElement('p');
                     notice.textContent = 'REVISAR QUE LA CANTIDAD DE MODEMS QUE ENTREGA ALMACEN CORRESPONDAN A LAS QUE MUESTRA LA ORDEN Y DAR ANTES DE ACEPTAR LA ORDEN';
@@ -79,6 +81,34 @@ document.addEventListener('DOMContentLoaded', async () => {
                             }
                         } catch (error) {
                             alert('Error al activar la orden');
+                        }
+                    });
+                } else if (order.estado === 'Activa') {
+                    console.log('Estado de la orden es Activa. Agregando botón "Terminar".'); // Log para depuración
+                    const finishButton = document.createElement('button');
+                    finishButton.textContent = 'Terminar';
+                    finishButton.className = 'btn btn-primary';
+                    finishButton.id = 'finishOrderButton';
+                    orderDetails.appendChild(finishButton);
+
+                    finishButton.addEventListener('click', async () => {
+                        console.log('Botón "Terminar" clicado'); // Log para depuración
+                        try {
+                            const response = await fetch(`${url}/orden/terminar`, {
+                                method: 'PATCH',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+                            const data = await response.json();
+                            if (response.ok) {
+                                alert(data.message);
+                                await loadOrder();
+                            } else {
+                                alert('Error: ' + data.message);
+                            }
+                        } catch (error) {
+                            alert('Error al terminar la orden');
                         }
                     });
                 }
@@ -146,6 +176,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const data = await response.json();
             if (response.ok) {
                 showMessage(resultMessage, data.message, 'success');
+                await loadOrder(); // Recargar los detalles de la orden después de registrar la ONU
             } else {
                 showMessage(resultMessage, data.message, 'danger');
             }
@@ -176,6 +207,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const data = await response.json();
             if (response.ok) {
                 showMessage(resultMessage, data.message, 'success');
+                await loadOrder(); // Recargar los detalles de la orden después de desechar la ONU
             } else {
                 showMessage(resultMessage, data.message, 'danger');
             }
@@ -206,6 +238,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const data = await response.json();
             if (response.ok) {
                 showMessage(resultMessage, data.message, 'success');
+                await loadOrder(); // Recargar los detalles de la orden después de almacenar la ONU
             } else {
                 showMessage(resultMessage, data.message, 'danger');
             }

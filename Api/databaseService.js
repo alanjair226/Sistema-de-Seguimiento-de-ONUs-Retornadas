@@ -43,10 +43,11 @@ const registerONU = async (SN, motivoId, usuario, modeloId) => {
 
             // Verificar si la columna existe en ordenactiva[0]
             if (ordenactiva[0][modelo_nombre] === 0) {
-                return 'en la orden no se encuentran ONUs disponibles de este modelo para revisar'
-            } else{
-                console.log('si hay modems')
+                return 'en la orden no se encuentran ONUs disponibles de este modelo para revisar';
+            } else {
+                await connection.execute(`UPDATE orden SET ${modelo_nombre} = ${modelo_nombre} -1 WHERE id = ?`,[ordenactiva[0].id]);
             }
+
             const [existingONUs] = await connection.execute('SELECT * FROM `ONU` WHERE `SN` = ?', [SN]);
 
             if (existingONUs.length > 0) {
@@ -202,7 +203,7 @@ const getUltimasONUs = async () => {
                 FROM ONU 
                 INNER JOIN ONU_Motivo ON ONU.SN = ONU_Motivo.onu_sn
                 WHERE DATE(ONU_Motivo.fecha) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-                AND DATE(ONU_Motivo.fecha) <= CURDATE();
+                AND DATE(ONU_Motivo.fecha) <= CURDATE() ORDER BY fecha DESC;
 
             `);
             return results;
@@ -264,8 +265,24 @@ const activarOrden = async () => {
         const connection = await pool.getConnection();
         try {
             const [results] = await connection.execute(`SELECT * FROM orden WHERE estado = 'Por entregar' OR estado = 'Activa'`);
-            await connection.execute(`UPDATE orden SET estado='Activa' WHERE id = ?`,[results[0].id]);
+            await connection.execute(`UPDATE orden SET estado='Activa' WHERE id = ?`, [results[0].id]);
             return 'Soporte y Almacen quedarón de acuerdo en que la cantidad de ONUs entregada coincide con la orden';
+        } finally {
+            connection.release();
+        }
+    } catch (error) {
+        console.error('Error al obtener la orden:', error);
+        throw error;
+    }
+};
+
+const terminarOrden = async () => {
+    try {
+        const connection = await pool.getConnection();
+        try {
+            const [results] = await connection.execute(`SELECT * FROM orden WHERE estado = 'Por entregar' OR estado = 'Activa'`);
+            await connection.execute(`UPDATE orden SET estado='Terminada' WHERE id = ?`, [results[0].id]);
+            return 'Orden terminada';
         } finally {
             connection.release();
         }
@@ -301,5 +318,6 @@ module.exports = {
     postOrden,
     getOrden,
     getModelos,
-    activarOrden
+    activarOrden,
+    terminarOrden
 }
