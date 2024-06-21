@@ -147,7 +147,11 @@
 
                 const result = await response.json();
                 if (response.ok) {
-                    showPopup(`Orden creada con éxito. Detalles: ${JSON.stringify(result.response.detalles)}`);
+                    if (result.response && result.response.detalles) {
+                        showPopup(`Orden creada con éxito. Detalles: <ul>${formatDetails(result.response.detalles)}</ul>`);
+                    } else {
+                        showPopup(result.response);
+                    }
                 } else {
                     showPopup(`Error: ${result.message}`);
                 }
@@ -156,9 +160,19 @@
             }
         });
 
+        function formatDetails(details) {
+            let formattedDetails = '';
+            for (let key in details) {
+                if (details.hasOwnProperty(key)) {
+                    formattedDetails += `<li><strong>${key}</strong>: ${details[key]}</li>`;
+                }
+            }
+            return formattedDetails;
+        }
+
         function showPopup(message) {
             const popup = document.getElementById('popup');
-            document.getElementById('popupMessage').innerText = message;
+            document.getElementById('popupMessage').innerHTML = message;
             popup.classList.add('active');
         }
 

@@ -23,8 +23,8 @@
             margin-bottom: 20px;
         }
         .table-container {
-            width: 90%;
-            max-width: 1000px;
+            width: 100%;
+            max-width: 1500px;
             margin-top: 20px;
             margin-bottom: 20px;
         }
@@ -86,7 +86,8 @@
                         <th>ID</th>
                         <th>Estado</th>
                         <th>Total ONUs</th>
-                        <th>Fecha</th>
+                        <th>Fecha Inicio</th>
+                        <th>Fecha Finalizado</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -112,7 +113,8 @@
                     <td>${order.id}</td>
                     <td>${order.estado}</td>
                     <td>${order.Total_ONUs}</td>
-                    <td>${new Date(order.Fecha).toLocaleString()}</td>
+                    <td>${new Date(order.Fecha_inicio).toLocaleString()}</td>
+                    <td>${order.Fecha_finalizado ? new Date(order.Fecha_finalizado).toLocaleString() : 'N/A'}</td>
                     <td><button onclick="viewOrder(${order.id})">Consultar</button></td>
                 `;
 
