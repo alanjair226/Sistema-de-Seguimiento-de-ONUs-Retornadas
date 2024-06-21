@@ -144,8 +144,39 @@ app.post('/orden', async (req, res) => {
 
 app.get('/orden', async (req, res) => {
     try {
-        const Orden = await databaseService.getOrden();
+        const Orden = await databaseService.getOrdenActiva();
         res.json(Orden);
+    } catch (error) {
+        res.status(500).json({ message: 'Error al obtener la orden', error: error.message });
+    }
+});
+
+
+
+app.get('/orden/list', async (req, res) => {
+    try {
+        const Ordenes = await databaseService.getOrdenes();
+        res.json(Ordenes);
+    } catch (error) {
+        res.status(500).json({ message: 'Error al obtener la ordenes', error: error.message });
+    }
+});
+
+app.get('/orden/:id', async (req, res) => {
+    const {id} = req.params;
+    try {
+        const Orden = await databaseService.getOrden(id);
+        res.json(Orden);
+    } catch (error) {
+        res.status(500).json({ message: 'Error al obtener la orden', error: error.message });
+    }
+});
+
+app.get('/orden/onus/:id', async (req, res) => {
+    const {id} = req.params;
+    try {
+        const Onus = await databaseService.getONUsOrden(id);
+        res.json(Onus);
     } catch (error) {
         res.status(500).json({ message: 'Error al obtener la orden', error: error.message });
     }

@@ -245,7 +245,7 @@ const postOrden = async (Huawei_V5, Huawei_A5_H5, TpLink_G3V_Negro, TpLink_XC220
     }
 };
 
-const getOrden = async () => {
+const getOrdenActiva = async () => {
     try {
         const connection = await pool.getConnection();
         try {
@@ -260,12 +260,57 @@ const getOrden = async () => {
     }
 };
 
+const getOrden = async (id) => {
+    try {
+        const connection = await pool.getConnection();
+        try {
+            const [results] = await connection.execute(`SELECT * FROM orden WHERE id = ${id}`);
+            return results;
+        } finally {
+            connection.release();
+        }
+    } catch (error) {
+        console.error('Error al obtener la orden:', error);
+        throw error;
+    }
+};
+
+const getOrdenes = async () => {
+    try {
+        const connection = await pool.getConnection();
+        try {
+            const [results] = await connection.execute(`SELECT id, estado, Total_ONUs, Fecha FROM orden ORDER BY Fecha DESC`);
+            return results;
+        } finally {
+            connection.release();
+        }
+    } catch (error) {
+        console.error('Error al obtener la ordenes:', error);
+        throw error;
+    }
+};
+
+const getONUsOrden = async (id) => {
+    try {
+        const connection = await pool.getConnection();
+        try {
+            const [results] = await connection.execute(`SELECT * FROM ONU WHERE orden_id = ${id} ORDER BY Fecha DESC`);
+            return results;
+        } finally {
+            connection.release();
+        }
+    } catch (error) {
+        console.error('Error al obtener la ordenes:', error);
+        throw error;
+    }
+};
+
 const activarOrden = async () => {
     try {
         const connection = await pool.getConnection();
         try {
             const [results] = await connection.execute(`SELECT * FROM orden WHERE estado = 'Por entregar' OR estado = 'Activa'`);
-            await connection.execute(`UPDATE orden SET estado='Activa' WHERE id = ?`, [results[0].id]);
+            await connection.execute(`UPDATE orden SET estado='Activa', recibido='si' WHERE id = ?`, [results[0].id]);
             return 'Soporte y Almacen quedarón de acuerdo en que la cantidad de ONUs entregada coincide con la orden';
         } finally {
             connection.release();
@@ -317,7 +362,10 @@ module.exports = {
     getUltimasONUs,
     postOrden,
     getOrden,
+    getOrdenActiva,
     getModelos,
     activarOrden,
-    terminarOrden
+    terminarOrden,
+    getOrdenes,
+    getONUsOrden
 }
