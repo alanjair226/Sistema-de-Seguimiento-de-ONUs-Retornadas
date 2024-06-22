@@ -45,7 +45,7 @@ const registerONU = async (SN, motivoId, usuario, modeloId) => {
             if (ordenactiva[0][modelo_nombre] === 0) {
                 return 'en la orden no se encuentran ONUs disponibles de este modelo para revisar';
             } else {
-                await connection.execute(`UPDATE orden SET ${modelo_nombre} = ${modelo_nombre} -1 WHERE id = ?`,[ordenactiva[0].id]);
+                await connection.execute(`UPDATE orden SET ${modelo_nombre} = ${modelo_nombre} -1 WHERE id = ?`, [ordenactiva[0].id]);
             }
 
             const [existingONUs] = await connection.execute('SELECT * FROM `ONU` WHERE `SN` = ?', [SN]);
@@ -54,8 +54,8 @@ const registerONU = async (SN, motivoId, usuario, modeloId) => {
                 if (existingONUs[0].veces_instalada >= 2) {
                     return 'Esta ONU DEBE DESECHARSE';
                 }
-                await connection.execute('UPDATE `ONU` SET `estado` = ?, `veces_instalada` = `veces_instalada` + 1, `orden_id` = ? WHERE `SN` = ?', ['desechado', orden, SN]);
-                await connection.execute('INSERT INTO `ONU_Motivo` (`onu_sn`, `motivo_id`, `usuario`, `modelo_id`) VALUES (?, ?, ?, ?)', [SN, motivoId, usuario, modeloId]);
+                await connection.execute(`UPDATE ONU SET estado = ?, veces_instalada = veces_instalada + 1, orden_id = ?, Motivo_estado = '' WHERE SN = ?`, ['desechado', orden, SN]);
+                await connection.execute('INSERT INTO `ONU_Motivo` (`onu_sn`, `motivo_id`, `usuario`) VALUES (?, ?, ?)', [SN, motivoId, usuario]);
                 return 'La ONU se registra y se desecha';
             } else {
                 await connection.execute('INSERT INTO `ONU` (`SN`, `estado`, `veces_instalada`, `modelo_id`, `orden_id`) VALUES (?, ?, ?, ?, ?)', [SN, 'almacen', 1, modeloId, orden]);
@@ -216,14 +216,18 @@ const getUltimasONUs = async () => {
     }
 };
 
-const postOrden = async (Huawei_V5, Huawei_A5_H5, TpLink_G3V_Negro, TpLink_XC220, Nokia, Otros) => {
+const postOrden = async (Huawei_V5, Huawei_A5_H5, TpLink_G3V_Negro, TpLink_XC220, Nokia, VSOL, TpLink_G3_Negro, TpLink_G3_Blanco, ZTE, Otros) => {
     try {
         const connection = await pool.getConnection();
+        const ordenVerification = await getOrdenActiva();
+        if (ordenVerification[0]) {
+            return 'no es posile crear la orden debido a que ya existe una orden activa o por entregar'
+        }
         try {
-            await connection.execute(`INSERT INTO orden (estado, recibido, Huawei_V5, Huawei_A5_H5, TpLink_G3V_Negro, TpLink_XC220, Nokia, Otros)
-                                        VALUES ('Por entregar', 'no', ?, ?, ?, ?, ?, ?)`, [Huawei_V5, Huawei_A5_H5, TpLink_G3V_Negro, TpLink_XC220, Nokia, Otros]);
-            const total = Huawei_V5 + Huawei_A5_H5 + TpLink_G3V_Negro + TpLink_XC220 + Nokia + Otros;
-            const respuestaJSON = {
+            await connection.execute(`INSERT INTO orden (estado, recibido, Huawei_V5, Huawei_A5_H5, TpLink_G3V_Negro, TpLink_XC220, Nokia, VSOL, TpLink_G3_Negro, TpLink_G3_Blanco, ZTE, Otros)
+                                        VALUES ('Por entregar', 'no', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [Huawei_V5, Huawei_A5_H5, TpLink_G3V_Negro, TpLink_XC220, Nokia, VSOL, TpLink_G3_Negro, TpLink_G3_Blanco, ZTE, Otros]);
+            const total = Huawei_V5 + Huawei_A5_H5 + TpLink_G3V_Negro + TpLink_XC220 + Nokia + VSOL + TpLink_G3_Negro + TpLink_G3_Blanco+ ZTE + Otros;
+            const orden = {
                 mensaje: `Se registró la orden`,
                 detalles: {
                     Huawei_V5,
@@ -231,11 +235,15 @@ const postOrden = async (Huawei_V5, Huawei_A5_H5, TpLink_G3V_Negro, TpLink_XC220
                     TpLink_G3V_Negro,
                     TpLink_XC220,
                     Nokia,
+                    VSOL, 
+                    TpLink_G3_Negro, 
+                    TpLink_G3_Blanco, 
+                    ZTE,
                     Otros,
                     total
                 }
             };
-            return respuestaJSON;
+            return orden;
         } finally {
             connection.release();
         }
@@ -279,7 +287,7 @@ const getOrdenes = async () => {
     try {
         const connection = await pool.getConnection();
         try {
-            const [results] = await connection.execute(`SELECT id, estado, Total_ONUs, Fecha FROM orden ORDER BY Fecha DESC`);
+            const [results] = await connection.execute(`SELECT id, estado, Total_ONUs, Fecha_inicio, Fecha_finalizado, Fecha_recogido FROM orden ORDER BY id DESC`);
             return results;
         } finally {
             connection.release();
@@ -294,7 +302,11 @@ const getONUsOrden = async (id) => {
     try {
         const connection = await pool.getConnection();
         try {
-            const [results] = await connection.execute(`SELECT * FROM ONU WHERE orden_id = ${id} ORDER BY Fecha DESC`);
+            const [results] = await connection.execute(`SELECT ONU.*, modelo_onu.nombre
+                                                        FROM ONU
+                                                        JOIN modelo_onu ON ONU.modelo_id = modelo_onu.id
+                                                        WHERE ONU.orden_id = ${id}
+                                                        ORDER BY Fecha DESC`);
             return results;
         } finally {
             connection.release();
@@ -311,7 +323,7 @@ const activarOrden = async () => {
         try {
             const [results] = await connection.execute(`SELECT * FROM orden WHERE estado = 'Por entregar' OR estado = 'Activa'`);
             await connection.execute(`UPDATE orden SET estado='Activa', recibido='si' WHERE id = ?`, [results[0].id]);
-            return 'Soporte y Almacen quedarón de acuerdo en que la cantidad de ONUs entregada coincide con la orden';
+            return {message: 'Soporte y Almacen quedarón de acuerdo en que la cantidad de ONUs entregada coincide con la orden'}
         } finally {
             connection.release();
         }
@@ -327,7 +339,7 @@ const terminarOrden = async () => {
         try {
             const [results] = await connection.execute(`SELECT * FROM orden WHERE estado = 'Por entregar' OR estado = 'Activa'`);
             await connection.execute(`UPDATE orden SET estado='Terminada' WHERE id = ?`, [results[0].id]);
-            return 'Orden terminada';
+            return {message: 'Orden terminada'};
         } finally {
             connection.release();
         }
@@ -337,6 +349,21 @@ const terminarOrden = async () => {
     }
 };
 
+
+const recogerOrden = async (id) => {
+    try {
+        const connection = await pool.getConnection();
+        try {
+            await connection.execute(`UPDATE orden SET Fecha_recogido=CURRENT_TIMESTAMP WHERE id = ?`, [id]);
+            return {message: 'Orden marcada como recogida'};
+        } finally {
+            connection.release();
+        }
+    } catch (error) {
+        console.error('Error al obtener la orden:', error);
+        throw error;
+    }
+};
 
 
 
@@ -367,5 +394,6 @@ module.exports = {
     activarOrden,
     terminarOrden,
     getOrdenes,
-    getONUsOrden
+    getONUsOrden,
+    recogerOrden
 }

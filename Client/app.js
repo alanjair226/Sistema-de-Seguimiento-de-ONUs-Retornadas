@@ -49,6 +49,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <p><strong>TpLink G3V Negro:</strong> ${order.TpLink_G3V_Negro}</p>
                     <p><strong>TpLink XC220:</strong> ${order.TpLink_XC220}</p>
                     <p><strong>Nokia:</strong> ${order.Nokia}</p>
+                    <p><strong>VSOL:</strong> ${order.VSOL}</p>
+                    <p><strong>TpLink G3 Negro:</strong> ${order.TpLink_G3_Negro}</p>
+                    <p><strong>TpLink G3 Blanco:</strong> ${order.TpLink_G3_Blanco}</p>
+                    <p><strong>ZTE:</strong> ${order.ZTE}</p>
                     <p><strong>Otros:</strong> ${order.Otros}</p>
                     <p><strong>Total ONUs:</strong> ${order.Total_ONUs}</p>
                 `;
@@ -184,6 +188,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (error) {
             showMessage(resultMessage, 'Error al registrar la ONU', 'danger');
         }
+        loadTableData()
     });
 
     disposeButton.addEventListener('click', async () => {

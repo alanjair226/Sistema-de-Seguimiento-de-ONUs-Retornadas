@@ -18,7 +18,7 @@
         .main-container {
             display: flex;
             width: 90%;
-            max-width: 1200px;
+            max-width: 1500px;
             margin-top: 20px;
             margin-bottom: 20px;
         }
@@ -50,15 +50,24 @@
         }
         td button {
             padding: 5px 10px;
-            margin: 0;
+            margin-right: 5px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
+        }
+        td button.view-button {
             background-color: #28a745;
             color: white;
         }
-        td button:hover {
+        td button.view-button:hover {
             background-color: #218838;
+        }
+        td button.red-button {
+            background-color: #dc3545;
+            color: white;
+        }
+        td button.red-button:hover {
+            background-color: #c82333;
         }
         .new-order-button {
             margin-top: 20px;
@@ -88,6 +97,7 @@
                         <th>Total ONUs</th>
                         <th>Fecha Inicio</th>
                         <th>Fecha Finalizado</th>
+                        <th>Fecha Recogido</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -98,32 +108,77 @@
         </div>
     </div>
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
+        async function fetchOrdersAndUpdateTable() {
             const ordersTableBody = document.getElementById('ordersTableBody');
-
-            // Fetch orders list
-            const response = await fetch('http://localhost:3000/orden/list');
-            const orders = await response.json();
-
-            // Populate the table with orders
-            orders.forEach(order => {
-                const row = document.createElement('tr');
-
-                row.innerHTML = `
-                    <td>${order.id}</td>
-                    <td>${order.estado}</td>
-                    <td>${order.Total_ONUs}</td>
-                    <td>${new Date(order.Fecha_inicio).toLocaleString()}</td>
-                    <td>${order.Fecha_finalizado ? new Date(order.Fecha_finalizado).toLocaleString() : 'N/A'}</td>
-                    <td><button onclick="viewOrder(${order.id})">Consultar</button></td>
-                `;
-
-                ordersTableBody.appendChild(row);
-            });
-        });
-
+            
+            try {
+                // Fetch orders list
+                const response = await fetch('http://localhost:3000/orden/list');
+                const orders = await response.json();
+                
+                // Clear existing table rows
+                ordersTableBody.innerHTML = '';
+                
+                // Populate the table with orders
+                orders.forEach(order => {
+                    const row = document.createElement('tr');
+                    row.id = `order-${order.id}`; // Assign unique id for each row
+                    
+                    row.innerHTML = `
+                        <td>${order.id}</td>
+                        <td>${order.estado}</td>
+                        <td>${order.Total_ONUs}</td>
+                        <td>${order.Fecha_inicio ? new Date(order.Fecha_inicio).toLocaleString() : 'N/A'}</td>
+                        <td>${order.Fecha_finalizado ? new Date(order.Fecha_finalizado).toLocaleString() : 'N/A'}</td>
+                        <td>${order.Fecha_recogido ? new Date(order.Fecha_recogido).toLocaleString() : 'N/A'}</td>
+                        <td>
+                            ${renderActions(order)}
+                        </td>
+                    `;
+                    
+                    ordersTableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error fetching orders:', error);
+                alert('Hubo un error al obtener las órdenes.');
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', fetchOrdersAndUpdateTable);
+        
+        async function recogerOrden(orderId) {
+            try {
+                const response = await fetch(`http://localhost:3000/orden/recoger`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ id: orderId })
+                });
+                if (response.ok) {
+                    // Fetch and update orders after successful recoger
+                    await fetchOrdersAndUpdateTable();
+                    alert('Orden recogida exitosamente.');
+                } else {
+                    alert('Hubo un error al intentar recoger la orden.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Hubo un error en la solicitud.');
+            }
+        }
+        
         function viewOrder(orderId) {
             window.location.href = `order.html?orderId=${orderId}`;
+        }
+        
+        function renderActions(order) {
+            if (order.estado === 'Terminada' && !order.Fecha_recogido) {
+                return `<button class="red-button" onclick="recogerOrden(${order.id})">Recoger</button>
+                        <button class="view-button" onclick="viewOrder(${order.id})">Consultar</button>`;
+            } else {
+                return `<button class="view-button" onclick="viewOrder(${order.id})">Consultar</button>`;
+            }
         }
     </script>
 </body>

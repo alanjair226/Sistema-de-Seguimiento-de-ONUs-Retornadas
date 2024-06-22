@@ -127,18 +127,18 @@ app.post('/motivoestado', async (req, res) => {
 });
 
 app.post('/orden', async (req, res) => {
-    const { Huawei_V5 = 0, Huawei_A5_H5 = 0, TpLink_G3V_Negro = 0, TpLink_XC220 = 0, Nokia = 0, Otros = 0 } = req.body;
+    const { Huawei_V5 = 0, Huawei_A5_H5 = 0, TpLink_G3V_Negro = 0, TpLink_XC220 = 0, Nokia = 0, VSOL = 0, TpLink_G3_Negro = 0, TpLink_G3_Blanco = 0, ZTE = 0, Otros = 0 } = req.body;
 
     // Verificar que al menos una ONU tenga un valor distinto de 0
-    if (Huawei_V5 === 0 && Huawei_A5_H5 === 0 && TpLink_G3V_Negro === 0 && TpLink_XC220 === 0 && Nokia === 0 && Otros === 0) {
+    if (Huawei_V5 === 0 && Huawei_A5_H5 === 0 && TpLink_G3V_Negro === 0 && TpLink_XC220 === 0 && Nokia === 0 && VSOL === 0 && TpLink_G3_Negro ===0 && TpLink_G3_Blanco === 0 && ZTE === 0 && Otros === 0) {
         return res.status(400).json({ message: 'Debe haber al menos una ONU en la orden' });
     }
 
     try {
-        const response = await databaseService.postOrden(Huawei_V5, Huawei_A5_H5, TpLink_G3V_Negro, TpLink_XC220, Nokia, Otros);
+        const response = await databaseService.postOrden(Huawei_V5, Huawei_A5_H5, TpLink_G3V_Negro, TpLink_XC220, Nokia, VSOL, TpLink_G3_Negro, TpLink_G3_Blanco, ZTE, Otros);
         res.json({ response });
     } catch (error) {
-        res.status(500).json({ message: 'Error al actualizar motivo', error: error.message });
+        res.status(500).json({ message: 'Error al subir orden', error: error.message });
     }
 });
 
@@ -194,6 +194,16 @@ app.patch('/orden/activar', async (req, res) => {
 app.patch('/orden/terminar', async (req, res) => {
     try {
         const Orden = await databaseService.terminarOrden();
+        res.json(Orden);
+    } catch (error) {
+        res.status(500).json({ message: 'Error al obtener la orden', error: error.message });
+    }
+});
+
+app.patch('/orden/recoger', async (req, res) => {
+    const {id} = req.body;
+    try {
+        const Orden = await databaseService.recogerOrden(id);
         res.json(Orden);
     } catch (error) {
         res.status(500).json({ message: 'Error al obtener la orden', error: error.message });
