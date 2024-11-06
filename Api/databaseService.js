@@ -253,6 +253,49 @@ const postOrden = async (Huawei_V5, Huawei_A5_H5, TpLink_G3V_Negro, TpLink_XC220
     }
 };
 
+
+const updateOrden = async (id, Huawei_V5, Huawei_A5_H5, TpLink_G3V_Negro, TpLink_XC220, Nokia, VSOL, TpLink_G3_Negro, TpLink_G3_Blanco, ZTE, Otros) => {
+    try {
+        const connection = await pool.getConnection();
+        const ordenVerification = await getOrdenActiva();
+        if (!ordenVerification[0]) {
+            return 'No es posible actualizar la orden debido a que no existe una orden activa o por entregar';
+        }
+        try {
+            await connection.execute(`UPDATE orden 
+                                      SET Huawei_V5 = ?, Huawei_A5_H5 = ?, TpLink_G3V_Negro = ?, TpLink_XC220 = ?, Nokia = ?, VSOL = ?, TpLink_G3_Negro = ?, TpLink_G3_Blanco = ?, ZTE = ?, Otros = ? 
+                                      WHERE id = ? AND estado = 'Por entregar'`, 
+                                      [Huawei_V5, Huawei_A5_H5, TpLink_G3V_Negro, TpLink_XC220, Nokia, VSOL, TpLink_G3_Negro, TpLink_G3_Blanco, ZTE, Otros, id]);
+
+            const total = Huawei_V5 + Huawei_A5_H5 + TpLink_G3V_Negro + TpLink_XC220 + Nokia + VSOL + TpLink_G3_Negro + TpLink_G3_Blanco + ZTE + Otros;
+            const orden = {
+                mensaje: `Se actualizó la orden con ID ${id}`,
+                detalles: {
+                    id,
+                    Huawei_V5,
+                    Huawei_A5_H5,
+                    TpLink_G3V_Negro,
+                    TpLink_XC220,
+                    Nokia,
+                    VSOL, 
+                    TpLink_G3_Negro, 
+                    TpLink_G3_Blanco, 
+                    ZTE,
+                    Otros,
+                    total
+                }
+            };
+            return orden;
+        } finally {
+            connection.release();
+        }
+    } catch (err) {
+        console.error('Error conectando a la base de datos:', err.stack);
+        throw err;
+    }
+};
+
+
 const getOrdenActiva = async () => {
     try {
         const connection = await pool.getConnection();
@@ -395,5 +438,6 @@ module.exports = {
     terminarOrden,
     getOrdenes,
     getONUsOrden,
-    recogerOrden
+    recogerOrden,
+    updateOrden
 }

@@ -142,6 +142,24 @@ app.post('/orden', async (req, res) => {
     }
 });
 
+app.put('/orden/:id', async (req, res) => {
+    const { id } = req.params;
+    const { Huawei_V5 = 0, Huawei_A5_H5 = 0, TpLink_G3V_Negro = 0, TpLink_XC220 = 0, Nokia = 0, VSOL = 0, TpLink_G3_Negro = 0, TpLink_G3_Blanco = 0, ZTE = 0, Otros = 0 } = req.body;
+
+    // Verificar que al menos una ONU tenga un valor distinto de 0
+    if (Huawei_V5 === 0 && Huawei_A5_H5 === 0 && TpLink_G3V_Negro === 0 && TpLink_XC220 === 0 && Nokia === 0 && VSOL === 0 && TpLink_G3_Negro === 0 && TpLink_G3_Blanco === 0 && ZTE === 0 && Otros === 0) {
+        return res.status(400).json({ message: 'Debe haber al menos una ONU en la orden para actualizar' });
+    }
+
+    try {
+        const response = await databaseService.updateOrden(id, Huawei_V5, Huawei_A5_H5, TpLink_G3V_Negro, TpLink_XC220, Nokia, VSOL, TpLink_G3_Negro, TpLink_G3_Blanco, ZTE, Otros);
+        res.json({ response });
+    } catch (error) {
+        res.status(500).json({ message: 'Error al actualizar la orden', error: error.message });
+    }
+});
+
+
 app.get('/orden', async (req, res) => {
     try {
         const Orden = await databaseService.getOrdenActiva();

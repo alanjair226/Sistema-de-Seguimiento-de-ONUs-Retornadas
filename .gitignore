@@ -1,3 +1,6 @@
 /Api/node_modules
 /Api/.env
-/Client/node_modules
+/gestion-onus/node_modules
+/gestion-onus/.env
+/gestion-onus-soporte/node_modules
+/gestion-onus-soporte/.env
