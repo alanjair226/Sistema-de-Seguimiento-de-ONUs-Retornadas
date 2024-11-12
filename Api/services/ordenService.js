@@ -103,10 +103,10 @@ const terminarOrden = async (username) => {
 };
 
 // Función para marcar una orden como recogida
-const recogerOrden = async (id) => {
+const recogerOrden = async (id, username) => {
     const connection = await pool.getConnection();
     try {
-        await connection.execute(`UPDATE orden SET Fecha_recogido=CURRENT_TIMESTAMP WHERE id = ?`, [id]);
+        await connection.execute(`UPDATE orden SET Fecha_recogido=CURRENT_TIMESTAMP, Usuario_recogio = ?  WHERE id = ?`, [username, id]);
         return { message: 'Orden marcada como recogida' };
     } finally {
         connection.release();
@@ -116,7 +116,7 @@ const recogerOrden = async (id) => {
 const getOrdenes = async (id) => {
     const connection = await pool.getConnection();
     try {
-        const [results] = await connection.execute(`SELECT id, estado, Total_ONUs, Fecha_inicio, Fecha_finalizado, Fecha_recogido, Usuario_creacion, Usuario_soporte_acepto, Usuario_soporte_termino   FROM orden ORDER BY id DESC`);
+        const [results] = await connection.execute(`SELECT id, estado, Total_ONUs, Fecha_inicio, Fecha_finalizado, Fecha_recogido, Usuario_creacion, Usuario_recogio, Usuario_soporte_acepto, Usuario_soporte_termino   FROM orden ORDER BY id DESC`);
         return results;
     } finally {
         connection.release();

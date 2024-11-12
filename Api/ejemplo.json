@@ -1,0 +1,15 @@
+{
+    "general":{
+        "total_onus": 100,
+        "almacenadas": 50,
+        "desechadas": 50
+    },
+    "Huawei_V5":{
+        "almacenadas": 5,
+        "desechadas": 7
+    },
+    "TpLink_XN220_Blanco":{
+        "almacenadas": 7,
+        "desechadas": 20
+    }
+}

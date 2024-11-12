@@ -75,7 +75,7 @@ const OrderDetails = ({ order, fetchOrder }) => {
     const ignoredFields = [
         'id', 'estado', 'recibido', 'Usuario_creacion', 'Usuario_soporte_acepto', 
         'Usuario_soporte_termino', 'Fecha_inicio', 'Fecha_finalizado', 
-        'Fecha_recogido', 'Total_ONUs'
+        'Fecha_recogido', 'Total_ONUs', 'Usuario_recogio'
     ];
     const modelos = Object.keys(order || {}).filter(key => !ignoredFields.includes(key));
 

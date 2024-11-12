@@ -79,9 +79,9 @@ const terminarOrden = async (req, res) => {
 };
 
 const recogerOrden = async (req, res) => {
-    const { id } = req.body;
+    const { id, username } = req.body;
     try {
-        const result = await ordenService.recogerOrden(id);
+        const result = await ordenService.recogerOrden(id, username);
         res.json(result);
     } catch (error) {
         res.status(500).json({ message: 'Error al marcar la orden como recogida', error: error.message });

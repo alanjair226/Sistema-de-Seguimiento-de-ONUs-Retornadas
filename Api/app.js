@@ -6,9 +6,10 @@ const ordersRoutes = require('./routes/ordenRoutes');
 const motivoRoutes = require('./routes/motivoRoutes');
 const usersRoutes = require('./routes/usersRoutes');
 const modeloRoutes = require('./routes/modeloRoutes');
+const reportRoutes = require('./routes/reportRoutes');
 
 const app = express();
-const port = 3001;
+const port = 3000;
 
 app.use(bodyParser.json());
 app.use(cors());
@@ -22,9 +23,10 @@ app.use('/orden', ordersRoutes);
 app.use('/motivos', motivoRoutes);
 app.use('/users', usersRoutes);
 app.use('/modelos', modeloRoutes);
+app.use('/report', reportRoutes);
 
-app.listen(port, '0.0.0.0', () => {
-    console.log(`Server is running on http://0.0.0.0:${port}`);
+app.listen(port, () => {
+    console.log(`Server is running on http://localhost/:${port}`);
 });
 
 process.on('SIGINT', async () => {

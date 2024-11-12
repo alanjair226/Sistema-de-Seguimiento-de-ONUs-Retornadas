@@ -4,6 +4,7 @@ import OrderList from './components/OrderList';
 import OrderDetails from './components/OrderDetails';
 import ModifyOrder from './components/ModifyOrder';
 import NewOrder from './components/NewOrder';
+import ReportGenerator from './components/ReportGenerator';
 
 const App = () => {
     return (
@@ -13,6 +14,7 @@ const App = () => {
                 <Route path="/order/:id" element={<OrderDetails />} />
                 <Route path="/modify_order/:id" element={<ModifyOrder />} />
                 <Route path="/new_order" element={<NewOrder />} />
+                <Route path="/generate_report" element={<ReportGenerator />} />
             </Routes>
         </Router>
     );
